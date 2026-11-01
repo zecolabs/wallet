@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ZecoWallet</title>
+<link rel="icon" type="image/png" href="icons/icon32.png">
+<style>
+  @font-face {
+    font-family: 'Figtree';
+    src: url('fonts/figtree-latin-wght-normal.woff2') format('woff2');
+    font-weight: 300 900;
+    font-style: normal;
+    font-display: swap;
+  }
+  :root {
+  --accent:      #B45A00;
+  --accent-dark: #8C4600;
+  --accent-soft: #F5E3D0;
+  --flame:       #D9D9D9;
+  --bg:          #FAF6F0;
+  --card:        #FFFFFF;
+  --text:        #2E1B04;
+  --muted:       #8A7360;
+  --border:      #E6DAC8;
+  --success:     #2E7D32;
+  --danger:      #C62828;
+  --warning:     #B26A00;
+  --success-soft:   #EAF3E4; --success-border: #C9E0BF; --success-ink: #1B5E20;
+  --danger-soft:    #FBE9E5; --danger-border:  #F0C6BE; --danger-ink:  #8E1B1B;
+  --warning-soft:   #FFF1D6; --warning-border: #F2D9A0; --warning-ink: #7A4B00;
+  --bg-page: #EEF1FB;
+  --bg-frame: #FFFFFF;
+  --bg-soft: #F5F7FE;
+  --bg-card: #FFFFFF;
+  --text-main: #23253A;
+  --text-sub: #8A8FA8;
+  --text-invert: #FFFFFF;
+  --warn-bg: #FFF6E5;
+  --warn-text: #9A6A00;
+  --radius-lg: 22px;
+  --radius-md: 14px;
+  --radius-sm: 10px;
+  --font: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+}
+.social-row{ display:flex; justify-content:center; gap:10px; margin:12px 0 4px; }
+.social-btn{
+  width:38px; height:38px; padding:0;
+  display:inline-flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); border-radius:10px;
+  background:var(--card); color:var(--accent); cursor:pointer;
+  transition:background .15s, color .15s, transform .05s;
+}
+.social-btn svg{ width:18px; height:18px; }
+.social-btn:hover{ background:var(--accent); color:var(--flame); }
+.social-btn:active{ transform:scale(.96); }
+  * { box-sizing: border-box; }
+  html, body {
+    width: 396px;
+    min-width: 396px;
+    overflow-x: hidden;
+    height: 100%;
+    margin: 0;
+    background: var(--bg-page);
+    font-family: var(--font);
+    color: var(--text-main);
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100%;
+    padding: 24px 12px;
+  }
+  .stage-label {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--text-sub);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .frame {
+    width: 372px;
+    max-width: 372px;
+    height: auto;
+    max-height: 640px;
+    background: var(--bg-frame);
+    border-radius: 28px;
+    box-shadow: 0 24px 60px -20px rgba(60,66,120,.28), 0 2px 8px rgba(60,66,120,.10);
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border);
+  }
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 18px 6px;
+    min-height: 40px;
+    flex-shrink: 0;
+  }
+  .icon-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--bg-soft);
+    border: none;
+    color: var(--text-main);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .icon-btn svg { width: 16px; height: 16px; }
+  .topbar-title { font-weight: 700; font-size: 15px; }
+  .spacer34 { width: 34px; }
+  .screen {
+    display: none;
+    flex-direction: column;
+    flex: 0 1 auto;
+    min-height: 0;
+    padding: 8px 22px 22px;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .screen.active { display: flex; }
+  .brand {
+    display: flex; flex-direction: column; align-items: center;
+    text-align: center;
+    margin-top: 28px;
+    gap: 14px;
+  }
+  .brand-mark {
+    width: 76px; height: 76px;
+    border-radius: 22px;
+    overflow: hidden;
+    display: block;
+    box-shadow: 0 14px 26px -10px rgba(180,90,0,.55);
+  }
+  .brand-mark img { width: 100%; height: 100%; display: block; }
+  .h-logo { width: 32px; height: 32px; border-radius: 9px; display: block; }
+  .about-row { display:flex; align-items:center; justify-content:center; gap:8px; margin:14px 0 2px; color:var(--muted); font-size:12.5px; font-weight:600; }
+  .about-row img { width:22px; height:22px; border-radius:6px; display:block; }
+  h1.title { font-size: 22px; font-weight: 800; margin: 0; }
+  p.subtitle { font-size: 14px; color: var(--text-sub); margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+  .err-text { color: var(--danger) !important; font-size: 12.5px !important; line-height: 1.45; text-align: center; margin-top: 10px !important; overflow-wrap: anywhere; word-break: break-word; }
+  .btn {
+    border: none;
+    border-radius: 16px;
+    font-family: var(--font);
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 8px;
+    width: auto;
+    max-width: 100%;
+    padding: 13px 28px;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:active { background: var(--accent-dark); }
+  .btn-secondary { background: var(--accent-soft); color: var(--accent-dark); }
+  .btn-ghost { background: transparent; color: var(--text-sub); }
+  .btn-danger-ghost { background: transparent; color: var(--danger); }
+  .stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+  .stack > .subtitle { align-self: stretch; text-align: center; }
+  .grow { flex: 1; }
+  .push-bottom { margin-top: auto; }
+  .after-field { margin-top: 16px; text-align: center; }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+  }
+  .field-label { font-size: 12.5px; font-weight: 700; color: var(--text-sub); margin-bottom: 6px; display:block; }
+  .input {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    background: var(--bg-soft);
+    border-radius: var(--radius-sm);
+    padding: 13px 14px;
+    font-family: var(--font);
+    font-size: 14.5px;
+    color: var(--text-main);
+    outline: none;
+  }
+  .input:focus { border-color: var(--accent); }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .input-wrap .lead {
+    position: absolute; left: 8px; top: 50%; transform: translateY(-50%);
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-dark);
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .input-wrap .lead svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .input-wrap .lead.token { background: linear-gradient(155deg, var(--accent), var(--accent-dark)); color: #fff; }
+  .input.compact { padding: 9px 12px 9px 40px; font-size: 13.5px; }
+  .input.compact.has-max { padding-right: 58px; }
+  .max-btn {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    border: none; border-radius: 8px; padding: 4px 9px;
+    background: var(--accent-soft); color: var(--accent-dark);
+    font-family: var(--font); font-weight: 800; font-size: 11px; letter-spacing: .04em;
+    cursor: pointer;
+  }
+  .max-btn:active { background: var(--accent); color: #fff; }
+  .label-row { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 6px; }
+  .label-row .field-label { margin-bottom: 0; }
+  .avail { font-size: 11.5px; font-weight: 600; color: var(--text-sub); }
+  .avail b { color: var(--text-main); font-weight: 700; }
+  .pct-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 8px; }
+  .pct-btn {
+    border: 1.5px solid var(--border); background: var(--bg-soft); color: var(--text-main);
+    border-radius: 9px; padding: 6px 0; font-family: var(--font); font-weight: 700; font-size: 12px; cursor: pointer;
+  }
+  .pct-btn:active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent-dark); }
+  .tip-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tip-btn {
+    border: 1.5px solid var(--border); background: var(--bg-soft); color: var(--text-main);
+    border-radius: 12px; padding: 9px 4px; font-family: var(--font); cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0;
+  }
+  .tip-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; color: var(--text-sub); }
+  .tip-btn .tt { font-size: 12.5px; font-weight: 700; }
+  .tip-btn .ta { font-size: 10.5px; font-weight: 600; color: var(--text-sub); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tip-btn.selected { border-color: var(--accent); background: var(--accent-soft); }
+  .tip-btn.selected svg, .tip-btn.selected .tt { color: var(--accent-dark); }
+
+  .mnemonic-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 14px 0;
+  }
+  .mnemonic-word {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 10px;
+    font-size: 13.5px;
+    display: flex;
+    gap: 6px;
+  }
+  .mnemonic-word { font-weight: 600; min-width: 0; overflow-wrap: anywhere; }
+  .mnemonic-word span { color: var(--text-sub); font-weight: 500; font-variant-numeric: tabular-nums; width: 22px; flex-shrink: 0; }
+  .btn-row { display: flex; justify-content: center; align-items: center; gap: 8px; }
+  .btn-row .btn { padding-left: 14px; padding-right: 14px; }
+  .btn-row .btn-secondary { min-width: 118px; }
+  .btn.ok { color: var(--success); }
+  .input.compact.has-copy { padding-right: 44px; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .copy-btn {
+    position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    width: 30px; height: 28px; border: none; border-radius: 8px;
+    background: var(--accent-soft); color: var(--accent-dark);
+    display: flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .copy-btn svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .copy-btn:active { background: var(--accent); color: #fff; }
+  .copy-btn.ok { color: var(--success); }
+  .warn-box {
+    background: var(--warn-bg);
+    color: var(--warn-text);
+    border-radius: 12px;
+    padding: 11px 12px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    display: flex;
+    gap: 8px;
+  }
+  .warn-box svg { width: 16px; height: 16px; flex-shrink: 0; margin-top: 1px; }
+  .checkline {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-size: 13px; color: var(--text-sub);
+    padding: 12px 2px;
+  }
+  .checkline input { margin-top: 2px; accent-color: var(--accent); width:16px; height:16px; }
+  .section-title {
+    font-size: 12.5px; font-weight: 700; color: var(--text-sub);
+    margin: 20px 0 8px; text-transform: uppercase; letter-spacing: .03em;
+  }
+  .row-list { display: flex; flex-direction: column; }
+  .row-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 2px;
+    border-bottom: 1px solid var(--border);
+  }
+  .row-item:last-child { border-bottom: none; }
+  .row-item .ico {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-dark);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .row-item .ico svg { width: 16px; height: 16px; }
+  .row-item .main { flex: 1; min-width: 0; }
+  .row-item .main .t1 { font-size: 13.5px; font-weight: 700; }
+  .row-item .main .t2 { font-size: 12px; color: var(--text-sub); }
+  .row-item .chev { color: var(--text-sub); }
+  .row-item .chev svg { width: 15px; height: 15px; }
+  .dots { display:flex; gap:6px; justify-content:center; margin-top: 14px; }
+  .dots span { width:6px; height:6px; border-radius:50%; background: var(--border); }
+  .dots span.on { background: var(--accent); width: 16px; border-radius: 4px; }
+  .screen[data-screen="home"] {
+    --h-bg:#f5f7fa; --h-card:#ffffff; --h-line:#e6eaf0; --h-text:#3a4351; --h-muted:#6b7686;
+    --h-accent:var(--accent); --h-accent-soft:var(--accent-soft); --h-accent-dark:var(--accent-dark); --h-green:var(--success); --h-green-soft:var(--success-soft);
+    --h-red:var(--danger); --h-red-soft:var(--danger-soft); --h-amber:var(--warning); --h-amber-soft:var(--warning-soft);
+    background: var(--h-bg); color: var(--h-text); padding: 8px 16px 20px;
+  }
+  .screen[data-screen="home"] svg { width:1em; height:1em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+  .screen[data-screen="home"] button { font:inherit; color:inherit; cursor:pointer; border:0; background:none; }
+  .h-top { display:grid; grid-template-columns:40px 1fr 40px; align-items:center; margin:6px 0 14px; flex-shrink:0; }
+  .h-acc { justify-self:center; display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:999px; background:var(--h-card)!important; border:1px solid var(--h-line)!important; font-weight:600; font-size:14px; }
+  .h-acc svg { font-size:14px; color:var(--h-muted); }
+  .h-nav { display:flex; justify-content:center; gap:8px; margin:-6px 0 14px; flex-shrink:0; }
+  .h-nav .h-acc { font-size:13px; padding:7px 12px; white-space:nowrap; }
+  .h-icon { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-size:20px; color:var(--h-muted); }
+  .h-icon:active { background:#e9edf3!important; }
+  .h-bal { background:var(--h-card); border:1px solid var(--h-line); border-radius:22px; padding:20px 16px 22px; text-align:center; box-shadow:0 1px 2px rgba(20,26,38,.04); flex-shrink:0; }
+  .h-chain { display:flex; justify-content:center; align-items:center; gap:8px; font-size:13px; color:var(--h-muted); }
+  .h-chain b { color:var(--h-text); font-weight:600; }
+  .h-dot { width:8px; height:8px; border-radius:50%; background:var(--h-green); box-shadow:0 0 0 3px var(--h-green-soft); }
+  .h-amount { margin-top:18px; display:flex; justify-content:center; align-items:baseline; gap:8px; }
+  .h-amount .num { font-size:34px; font-weight:800; letter-spacing:-.02em; }
+  .h-amount .sym { font-size:15px; font-weight:600; color:var(--h-muted); }
+  .h-addr { margin:14px auto 0; display:inline-flex!important; align-items:center; gap:8px; padding:8px 12px 8px 14px; border-radius:12px; background:var(--h-bg)!important; border:1px solid var(--h-line)!important; font-size:13px; color:var(--h-muted); font-variant-numeric:tabular-nums; }
+  .h-addr svg { font-size:15px; }
+  .h-addr.ok { color:var(--h-green); }
+  .h-actions { margin-top:20px; display:flex; justify-content:center; gap:36px; }
+  .h-act { display:flex; flex-direction:column; align-items:center; gap:8px; font-weight:600; font-size:13px; color:var(--h-text); }
+  .h-act i { width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:22px; font-style:normal; transition:transform .12s; }
+  .h-act:active i { transform:scale(.94); }
+  .h-act.send:active i { background:var(--h-accent-dark); }
+  .h-act.send i { background:var(--h-accent); color:#fff; }
+  .h-title { display:flex; align-items:center; gap:8px; margin:24px 2px 12px; font-weight:700; font-size:15px; flex-shrink:0; }
+  .h-title svg { font-size:18px; color:var(--h-muted); }
+  #historyList { display:flex; flex-direction:column; gap:10px; }
+  .h-tx { display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:12px; background:var(--h-card); border:1px solid var(--h-line); border-radius:18px; padding:13px 14px; cursor:pointer; transition:transform .12s, box-shadow .12s; }
+  .h-tx:active { transform:scale(.985); }
+  .h-ava { position:relative; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; font-size:20px; background:var(--h-accent-soft); color:var(--h-accent-dark); }
+  .h-ava.danger { background:#f1f3f6; color:var(--h-muted); }
+  .h-badge { position:absolute; right:-4px; bottom:-4px; width:18px; height:18px; border-radius:50%; display:grid; place-items:center; font-size:11px; border:2px solid var(--h-card); color:#fff; }
+  .h-badge svg { stroke-width:3; }
+  .h-badge.success { background:var(--h-green); }
+  .h-badge.danger { background:var(--h-red); }
+  .h-badge.pending { background:var(--h-amber); }
+  .h-txmain { min-width:0; }
+  .h-lbl { font-size:12px; color:var(--h-muted); font-weight:500; }
+  .h-to { font-size:14px; font-weight:600; margin-top:1px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-variant-numeric:tabular-nums; }
+  .h-time { font-size:12px; color:var(--h-muted); margin-top:3px; }
+  .h-val { text-align:center; min-width:56px; }
+  .h-val b { display:block; font-size:15px; font-weight:700; color:var(--h-red); }
+  .h-chip { display:inline-block; margin-top:3px; padding:2px 8px; border-radius:999px; font-size:11px; font-weight:600; }
+  .h-chip.danger { background:var(--h-red-soft); color:var(--h-red); }
+  .h-chip.pending { background:var(--h-amber-soft); color:var(--warning-ink); }
+  .h-empty { display:flex; flex-direction:column; align-items:center; text-align:center; padding:34px 20px; background:var(--h-card); border:1px dashed #d5dbe5; border-radius:18px; color:var(--h-muted); font-size:13px; line-height:1.5; }
+  .h-empty .eic { width:56px; height:56px; border-radius:50%; display:grid; place-items:center; font-size:24px; background:var(--h-accent-soft); color:var(--h-accent-dark); margin-bottom:14px; }
+  .h-empty b { display:block; color:var(--h-text); font-size:15px; margin-bottom:4px; }
+  .tx-detail-icon {
+    width: 44px; height: 44px; border-radius: 50%; margin: 4px auto 2px;
+    display: flex; align-items: center; justify-content: center; font-size: 20px;
+    background: var(--bg-soft);
+  }
+  .tx-detail-icon svg { width: 24px; height: 24px; }
+  .tx-detail-icon.success { background: var(--success-soft); color: var(--success); }
+  .tx-detail-icon.pending { background: var(--warning-soft); color: var(--warning); }
+  .tx-detail-icon.danger { background: var(--danger-soft); color: var(--danger); }
+  .tx-detail-status-label { text-align: center; font-size: 12.5px; font-weight: 700; margin-bottom: 2px; }
+  .tx-detail-status-label.success { color: var(--success); }
+  .tx-detail-status-label.pending { color: var(--warn-text); }
+  .tx-detail-status-label.danger { color: var(--danger); }
+  .tx-detail-amount { text-align: center; font-size: 22px; font-weight: 800; margin-bottom: 8px; overflow-wrap: anywhere; }
+  .card.flat { border: none; padding: 0; background: transparent; }
+  .kv-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 40px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 12.5px; }
+  .kv-row:last-child { border-bottom: none; }
+  .kv-row .k { color: var(--text-sub); flex-shrink: 0; }
+  .kv-row .v { display: flex; align-items: center; justify-content: flex-end; gap: 4px; min-width: 0; text-align: right; word-break: break-all; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .copy-mini {
+    border: none; background: transparent; color: var(--text-sub); cursor: pointer;
+    width: 22px; height: 22px; padding: 0; border-radius: 6px; flex-shrink: 0;
+    display: inline-flex; align-items: center; justify-content: center;
+  }
+  .copy-mini svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .copy-mini:active { background: var(--accent-soft); color: var(--accent-dark); }
+  .copy-mini.ok { color: var(--success); }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(20,21,31,.45);
+    display: none; align-items: center; justify-content: center; z-index: 50; padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-box {
+    background: var(--bg-card); border-radius: var(--radius-lg); padding: 20px;
+    width: 100%; max-width: 300px; box-shadow: 0 20px 50px rgba(0,0,0,.25);
+  }
+  .modal-title { font-size: 15px; font-weight: 800; margin-bottom: 6px; }
+  .modal-message { font-size: 13px; color: var(--text-sub); line-height: 1.5; margin-bottom: 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .modal-input {
+    width: 100%; border: 1.5px solid var(--border); background: var(--bg-soft);
+    border-radius: var(--radius-sm); padding: 11px 12px; font-family: var(--font);
+    font-size: 14px; margin-bottom: 14px; outline: none;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; justify-content: center; }
+  .screen[data-screen="welcome"] { justify-content: center; }
+  .screen[data-screen="welcome"] .topbar { display: none; }
+  .screen[data-screen="welcome"] .brand { margin-top: 0; }
+  .screen.center { text-align: center; }
+  .screen.center .field-label { text-align: center; }
+  .screen.center .mnemonic-word { justify-content: center; }
+  .screen.center .input { text-align: left; }
+  .toast-layer {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 2147483000;
+    display: flex; flex-direction: column; gap: 8px;
+    padding: calc(env(safe-area-inset-top, 0px) + 12px) 12px 0;
+    pointer-events: none;
+  }
+  .toast {
+    --t-bg: var(--success-soft); --t-bd: var(--success-border); --t-ink: var(--success-ink);
+    --t-ico: var(--success); --t-fg: var(--text);
+    pointer-events: auto; position: relative;
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 12px 40px 12px 12px;
+    border-radius: 16px;
+    background: var(--t-bg); color: var(--t-fg);
+    border: 1px solid var(--t-bd);
+    box-shadow: 0 12px 26px -12px rgba(46,27,4,.35), 0 2px 5px rgba(46,27,4,.08);
+    animation: toast-in .22s ease-out;
+  }
+  .toast.success { --t-bg: var(--success-soft); --t-bd: var(--success-border); --t-ink: var(--success-ink); --t-ico: var(--success); }
+  .toast.error   { --t-bg: var(--danger-soft);  --t-bd: var(--danger-border);  --t-ink: var(--danger-ink);  --t-ico: var(--danger); }
+  .toast.warning { --t-bg: var(--warning-soft); --t-bd: var(--warning-border); --t-ink: var(--warning-ink); --t-ico: var(--warning); }
+  .toast.leaving { animation: toast-out .2s ease-in forwards; }
+  @keyframes toast-in  { from { opacity: 0; transform: translateY(-14px); } to { opacity: 1; transform: none; } }
+  @keyframes toast-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-14px); } }
+  .toast-ico { width: 30px; height: 30px; border-radius: 50%; background: var(--t-ico); color: #FFFFFF; display: grid; place-items: center; flex-shrink: 0; }
+  .toast-ico svg, .toast-close svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .toast-body { flex: 1; min-width: 0; padding-top: 1px; }
+  .toast-title { font-size: 13.5px; font-weight: 800; line-height: 1.3; color: var(--t-ink); }
+  .toast-msg { font-size: 12.5px; font-weight: 500; line-height: 1.45; margin-top: 2px; white-space: pre-line; overflow-wrap: anywhere; }
+  .toast-close {
+    position: absolute; top: 8px; right: 8px; width: 26px; height: 26px;
+    border: none; border-radius: 50%; background: transparent; color: var(--t-ink); opacity: .75;
+    cursor: pointer; display: grid; place-items: center; padding: 0;
+  }
+  .toast-close svg { width: 15px; height: 15px; }
+  .toast-close:active { background: rgba(46,27,4,.08); }
+  .toast.tx { flex-direction: column; align-items: center; text-align: center; gap: 8px; padding: 16px 14px 14px; }
+  .toast.tx .toast-check { width: 44px; height: 44px; border-radius: 50%; background: var(--success); color: #FFFFFF; display: flex; align-items: center; justify-content: center; }
+  .toast.tx .toast-check svg { width: 24px; height: 24px; }
+  .toast.tx .toast-title { font-size: 15px; }
+  .toast.tx .input-wrap { width: 100%; text-align: left; }
+  .h-to, .h-addr, #homeAddress,
+  #txDetailSender, #txDetailTo, #txDetailHash, .input.compact.has-copy { font-family: var(--font-mono); }
+  .h-amount .num, .tx-detail-amount, .avail b { font-variant-numeric: tabular-nums; }
+  #confirmTo { font-family: var(--font-mono); font-size: 12.5px; }
+  .tx-summary {
+    margin-top: 14px; background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: var(--radius-md); overflow: hidden;
+  }
+  .tx-row {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+    padding: 11px 14px; border-bottom: 1px solid var(--border); font-size: 13.5px;
+  }
+  .tx-row .k { color: var(--text-sub); font-weight: 700; flex-shrink: 0; }
+  .tx-row .v {
+    color: var(--text-main); font-weight: 700; text-align: right;
+    font-family: var(--font-mono); font-variant-numeric: tabular-nums; overflow-wrap: anywhere;
+  }
+  .tx-row.total { background: var(--accent-soft); border-bottom: none; padding: 13px 14px; }
+  .tx-row.total .k { color: var(--accent-dark); }
+  .tx-row.total .v { color: var(--accent-dark); font-size: 15px; font-weight: 800; }
+  #verifyProofInput, #verifyAddressValue, #verifyPubkeyValue { font-family: var(--font-mono); font-size: 12.5px; }
+  .verify-status {
+    display: flex; align-items: center; gap: 8px; padding: 11px 12px;
+    border-radius: var(--radius-md); font-size: 13.5px; font-weight: 700; line-height: 1.4;
+  }
+  .verify-status svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .verify-status.ok  { background: var(--success-soft); color: var(--success-ink); }
+  .verify-status.bad { background: var(--danger-soft); color: var(--danger-ink); }
+  .verify-time { margin: 8px 2px 0; font-size: 12.5px; color: var(--text-sub); }
+</style>
+</head>
+<body>
+<div class="frame" id="frame">
+  <section class="screen active" data-screen="welcome">
+    <div class="topbar"><div class="spacer34"></div><div></div><div class="spacer34"></div></div>
+    <div class="brand">
+      <div class="brand-mark"><img src="icons/logo.svg" alt="Zeco Wallet"></div>
+      <h1 class="title">Zeco Wallet</h1>
+      <p class="subtitle">A lightweight, beginner-friendly wallet<br>for the ZecoLabs blockchain</p>
+    </div>
+    <div id="demoBanner" class="warn-box" style="display:none; margin-top:10px;">wasm module not found. Put the <b>pkg/</b> folder next to this file for the real functionality.</div>
+    <div class="after-field stack" style="margin-top:28px;">
+      <button class="btn btn-primary" id="btnCreate">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Create New Wallet
+      </button>
+      <button class="btn btn-secondary" data-go="import">Import Existing Wallet</button>
+      <p class="subtitle" style="margin-top:6px;">By continuing, you agree to keep your recovery phrase safe yourself.</p>
+    </div>
+  </section>
+  <section class="screen" data-screen="unlock">
+    <div class="topbar"><div class="spacer34"></div><div class="topbar-title">Unlock Wallet</div><div class="spacer34"></div></div>
+    <div class="brand" style="margin-top:14px;">
+      <div class="brand-mark"><img src="icons/logo.svg" alt="ZecoWallet"></div>
+    </div>
+    <div style="height:8px;"></div>
+    <label class="field-label">Password</label>
+    <input class="input" type="password" id="unlockPw" placeholder="Enter your password">
+    <p id="unlockError" class="subtitle err-text" style="display:none;">Incorrect password.</p>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnUnlock">Unlock</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="import">
+    <div class="topbar">
+      <button class="icon-btn" id="btnImportBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Import Wallet</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 14px;">Enter your 12-word recovery phrase to restore your wallet.</p>
+    <label class="field-label">Recovery Phrase</label>
+    <textarea class="input" rows="4" id="importPhrase" placeholder="word1 word2 word3 ..." style="resize:none; font-family: var(--font);"></textarea>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnImportSubmit">Continue</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="create-1">
+    <div class="topbar">
+      <button class="icon-btn" id="btnCreate1Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Recovery Phrase</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 4px;">Write these words down in order and keep them somewhere safe.</p>
+    <div class="mnemonic-grid" id="mnemonicGrid"></div>
+    <div class="warn-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.3 3.86l-8.2 14.2A1 1 0 0 0 3 19.8h18a1 1 0 0 0 .9-1.74l-8.2-14.2a1 1 0 0 0-1.8 0Z"/></svg>
+      Never share this phrase with anyone, including people claiming to be "support".
+    </div>
+    <div class="after-field btn-row">
+      <button class="btn btn-secondary" id="btnCopyCreatePhrase" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span class="lbl">Copy</span></button>
+      <button class="btn btn-primary" data-go="create-2">I've Saved It</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="create-2">
+    <div class="topbar">
+      <button class="icon-btn" data-go="create-1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Confirm</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 14px;">Type the 4th and 9th words of your phrase to make sure it was saved correctly.</p>
+    <label class="field-label">Word #4</label>
+    <input class="input" id="word4" placeholder="Type the 4th word">
+    <div style="height:12px;"></div>
+    <label class="field-label">Word #9</label>
+    <input class="input" id="word9" placeholder="Type the 9th word">
+    <p id="confirmError" class="subtitle err-text" style="display:none;">Words do not match, try again.</p>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnConfirmWords">Confirm</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="set-password">
+    <div class="topbar">
+      <button class="icon-btn" id="btnPwBack"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Create Password</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 14px;">This password is only used to unlock ZecoWallet on this device.</p>
+    <label class="field-label">Password</label>
+    <input class="input" type="password" id="pw1" placeholder="At least 10 characters">
+    <div style="height:12px;"></div>
+    <label class="field-label">Confirm Password</label>
+    <input class="input" type="password" id="pw2" placeholder="Re-enter your password">
+    <p id="pwError" class="subtitle err-text" style="display:none;"></p>
+    <input type="hidden" id="setPasswordMode" value="create">
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnSetPassword">Create Wallet</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="home">
+    <div class="h-top">
+      <img class="h-logo" src="icons/logo.svg" alt="ZecoWallet">
+      <button class="h-acc" id="btnAccount" type="button"><span id="homeAccountName">Main Wallet</span>
+        <svg viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>
+      </button>
+      <button class="h-icon" data-go="settings" aria-label="Settings">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+      </button>
+    </div>
+    <div class="h-nav">
+      <button class="h-acc" data-go="sign" type="button" aria-label="Sign Message">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+        <span>Sign</span>
+      </button>
+      <button class="h-acc" data-go="verify" type="button" aria-label="Verify Message">
+        <svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+        <span>Verify</span>
+      </button>
+    </div>
+    <div class="h-bal">
+      <div class="h-chain"><b id="homeChain">alpha</b><span class="h-dot"></span><span id="homeNetwork">Mainnet</span></div>
+      <div class="h-amount"><span class="num" id="homeBalance">0</span><span class="sym" id="homeSymbol">ZP</span></div>
+      <button class="h-addr" id="btnCopyAddr" type="button" title="Copy address">
+        <span id="homeAddress">-</span>
+        <svg id="copyIcon" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>
+      </button>
+      <div class="h-actions">
+        <button class="h-act send" id="btnGoSend" type="button"><i><svg viewBox="0 0 24 24"><path d="M12 19V5M5 12l7-7 7 7"/></svg></i>Send</button>
+      </div>
+    </div>
+    <div class="h-title">
+      <svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>History
+    </div>
+    <div class="h-empty" id="historyEmpty">
+      <div class="eic"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg></div>
+      <b>No transactions yet</b>Send or receive your first tokens,<br>and the history will show up here.
+    </div>
+    <div id="historyList" style="display:none;"></div>
+  </section>
+  <section class="screen" data-screen="accounts">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">My Wallets</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 10px;">Choose the wallet you want to use.</p>
+    <div class="row-list card" id="walletList"></div>
+    <div class="after-field stack">
+      <button class="btn btn-secondary" id="btnAddWallet" type="button">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add Wallet
+      </button>
+    </div>
+  </section>
+  <section class="screen" data-screen="add-wallet">
+    <div class="topbar">
+      <button class="icon-btn" data-go="accounts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Add Wallet</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 10px;">The new wallet uses the same password and becomes the active wallet right away. Your password is requested once more in the final step.</p>
+    <div class="row-list card">
+      <div class="row-item" id="btnAddCreate" style="cursor:pointer;">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        <div class="main"><div class="t1">Create New Wallet</div><div class="t2">With a new recovery phrase</div></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="row-item" id="btnAddImport" style="cursor:pointer;">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg></div>
+        <div class="main"><div class="t1">Import Wallet</div><div class="t2">Use an existing recovery phrase</div></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+  </section>
+  <section class="screen" data-screen="network">
+    <div class="topbar">
+      <button class="icon-btn" data-go="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Network</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 14px;">The node RPC address the wallet uses to read balances, prices, and send transactions.</p>
+    <label class="field-label">RPC URL</label>
+    <input class="input" type="text" id="rpcUrlInput" placeholder="http://127.0.0.1:3000" autocomplete="off" spellcheck="false">
+    <p id="rpcStatus" class="subtitle" style="margin:10px 2px 0; text-align:center; overflow-wrap:anywhere;"></p>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnRpcSave" type="button">Save</button>
+      <button class="btn btn-secondary" id="btnRpcTest" type="button">Test Connection</button>
+      <button class="btn btn-ghost" id="btnRpcReset" type="button">Reset to Default</button>
+    </div>
+  </section>
+  <section class="screen center" data-screen="tx-detail">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Transaction Details</div>
+      <div class="spacer34"></div>
+    </div>
+    <div class="tx-detail-icon" id="txDetailIcon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <div class="tx-detail-status-label" id="txDetailStatus">Pending</div>
+    <div class="tx-detail-amount" id="txDetailAmount">0 ZP</div>
+    <div class="card flat">
+      <div class="kv-row"><span class="k">Sender</span><span class="v"><span id="txDetailSender">-</span><button class="copy-mini" id="txDetailSenderCopy" type="button" aria-label="Copy sender"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></span></div>
+      <div class="kv-row"><span class="k">Recipient</span><span class="v"><span id="txDetailTo">-</span><button class="copy-mini" id="txDetailToCopy" type="button" aria-label="Copy recipient"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></span></div>
+      <div class="kv-row"><span class="k">Hash</span><span class="v"><span id="txDetailHash">-</span><button class="copy-mini" id="txDetailHashCopy" type="button" aria-label="Copy hash"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button></span></div>
+      <div class="kv-row"><span class="k">Block</span><span class="v" id="txDetailBlock">-</span></div>
+      <div class="kv-row"><span class="k">Fee</span><span class="v" id="txDetailFee">-</span></div>
+      <div class="kv-row"><span class="k">Tip</span><span class="v" id="txDetailTip">-</span></div>
+      <div class="kv-row"><span class="k">Time</span><span class="v" id="txDetailTime">-</span></div>
+    </div>
+  </section>
+  <section class="screen" data-screen="send">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Send ZP</div>
+      <div class="spacer34"></div>
+    </div>
+    <label class="field-label">Destination Address</label>
+    <div class="input-wrap">
+      <span class="lead"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M16 12.5h2.5"/><path d="M3 10h18"/></svg></span>
+      <input class="input compact" id="sendTo" placeholder="rx... (20-byte hex)">
+    </div>
+    <div style="height:12px;"></div>
+    <div class="label-row">
+      <label class="field-label">Amount</label>
+      <span class="avail">Available: <b id="sendBalance">0</b> <span id="sendBalanceSym">ZP</span></span>
+    </div>
+    <div class="input-wrap">
+      <span class="lead token"><svg viewBox="0 0 24 24"><path d="M8 5v11h8"/></svg></span>
+      <input class="input compact has-max" id="sendAmount" placeholder="0.00" inputmode="decimal" autocomplete="off">
+      <button type="button" class="max-btn" id="btnMax">MAX</button>
+    </div>
+    <div class="pct-row">
+      <button type="button" class="pct-btn" data-pct="25">25%</button>
+      <button type="button" class="pct-btn" data-pct="50">50%</button>
+      <button type="button" class="pct-btn" data-pct="75">75%</button>
+      <button type="button" class="pct-btn" data-pct="90">90%</button>
+    </div>
+    <div style="height:12px;"></div>
+    <label class="field-label">Tip</label>
+    <div class="tip-row">
+      <button type="button" class="tip-btn selected" data-tip="low">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span class="tt">Low</span><span class="ta" id="tipLow">0</span>
+      </button>
+      <button type="button" class="tip-btn" data-tip="medium">
+        <svg viewBox="0 0 24 24"><path d="M3 13a9 9 0 0 1 18 0"/><path d="M12 13l4-4"/><path d="M3 13h2M19 13h2"/></svg>
+        <span class="tt">Medium</span><span class="ta" id="tipMedium">0</span>
+      </button>
+      <button type="button" class="tip-btn" data-tip="fast">
+        <svg viewBox="0 0 24 24"><path d="M13 2 4 14h7l-1 8 9-12h-7l1-8Z"/></svg>
+        <span class="tt">Fast</span><span class="ta" id="tipFast">0</span>
+      </button>
+    </div>
+    <p id="sendError" class="subtitle err-text" style="display:none;"></p>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnReviewSend">Review Transaction</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="confirm-tx">
+    <div class="topbar">
+      <button class="icon-btn" id="btnConfirmBack" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Confirm Transaction</div>
+      <div class="spacer34"></div>
+    </div>
+    <label class="field-label" style="margin-top:6px;">Send to</label>
+    <div class="input-wrap">
+      <span class="lead"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M16 12.5h2.5"/><path d="M3 10h18"/></svg></span>
+      <input class="input compact" id="confirmTo" readonly spellcheck="false" autocomplete="off">
+    </div>
+    <div class="tx-summary">
+      <div class="tx-row"><span class="k">Amount</span><span class="v" id="confirmAmount">0</span></div>
+      <div class="tx-row"><span class="k">Fee</span><span class="v" id="confirmFee">0</span></div>
+      <div class="tx-row"><span class="k">Tip</span><span class="v" id="confirmTip">0</span></div>
+      <div class="tx-row total"><span class="k">Total</span><span class="v" id="confirmTotal">0</span></div>
+    </div>
+    <div class="warn-box" style="margin-top:12px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+      <span>Check the destination address carefully. Transactions cannot be undone.</span>
+    </div>
+    <p id="confirmTxError" class="subtitle err-text" style="display:none;"></p>
+    <div class="after-field btn-row">
+      <button class="btn btn-secondary" id="btnConfirmCancel">Cancel</button>
+      <button class="btn btn-primary" id="btnConfirmSend">Send</button>
+    </div>
+  </section>
+  <section class="screen" data-screen="sign">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Sign Message</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 14px;">Sign a text message with the active wallet's key. This feature is only available from inside the wallet.</p>
+    <label class="field-label">Message</label>
+    <textarea class="input" rows="5" id="signMessageInput" maxlength="1024" placeholder="Write your message here..." style="resize:none; font-family: var(--font);"></textarea>
+    <p id="signError" class="subtitle err-text" style="display:none;"></p>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnSignMessage" type="button">Sign</button>
+    </div>
+    <div id="signResult" style="display:none; margin-top:16px;">
+      <label class="field-label">Signature</label>
+      <div class="input-wrap">
+        <span class="lead"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+        <input class="input compact has-copy" id="signProofValue" readonly spellcheck="false" autocomplete="off">
+        <button type="button" class="copy-btn" id="btnCopyProof" aria-label="Copy signature"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+      </div>
+    </div>
+  </section>
+  <section class="screen" data-screen="verify">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Verify Message</div>
+      <div class="spacer34"></div>
+    </div>
+    <p class="subtitle" style="margin:6px 2px 14px;">Check whether a message was really signed by the proof's owner. Your wallet key is not used.</p>
+    <label class="field-label">Message</label>
+    <textarea class="input" rows="5" id="verifyMessageInput" maxlength="1024" placeholder="Paste the original message here..." style="resize:none; font-family: var(--font);"></textarea>
+    <label class="field-label" style="margin-top:12px;">Proof</label>
+    <div class="input-wrap">
+      <span class="lead"><svg viewBox="0 0 24 24"><path d="M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6l7-3Z"/><path d="m9 12 2 2 4-4"/></svg></span>
+      <input class="input compact" id="verifyProofInput" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="Paste the proof (208 hex characters)">
+    </div>
+    <p id="verifyError" class="subtitle err-text" style="display:none;"></p>
+    <div class="after-field stack">
+      <button class="btn btn-primary" id="btnVerifyMessage" type="button">Verify</button>
+    </div>
+    <div id="verifyResult" style="display:none; margin-top:16px;">
+      <div id="verifyStatus" class="verify-status ok"><span id="verifyStatusIcon"></span><span id="verifyStatusText"></span></div>
+      <div id="verifyDetail" style="display:none;">
+        <label class="field-label" style="margin-top:12px;">Signer Address</label>
+        <div class="input-wrap">
+          <span class="lead"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M16 12.5h2.5"/><path d="M3 10h18"/></svg></span>
+          <input class="input compact has-copy" id="verifyAddressValue" readonly spellcheck="false" autocomplete="off">
+          <button type="button" class="copy-btn" id="btnCopyVerifyAddress" aria-label="Copy address"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+        </div>
+        <label class="field-label" style="margin-top:12px;">Signer Public Key</label>
+        <div class="input-wrap">
+          <span class="lead"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9"/><path d="m16 7 3 3"/></svg></span>
+          <input class="input compact has-copy" id="verifyPubkeyValue" readonly spellcheck="false" autocomplete="off">
+          <button type="button" class="copy-btn" id="btnCopyVerifyPubkey" aria-label="Copy public key"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+        </div>
+        <p class="verify-time" id="verifyTime"></p>
+      </div>
+    </div>
+  </section>
+  <section class="screen center" data-screen="reveal-phrase">
+    <div class="topbar">
+      <button class="icon-btn" data-go="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Recovery Phrase</div>
+      <div class="spacer34"></div>
+    </div>
+    <div class="mnemonic-grid" id="revealGrid"></div>
+    <div class="after-field btn-row">
+      <button class="btn btn-secondary" id="btnCopyRevealPhrase" type="button"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span class="lbl">Copy</span></button>
+      <button class="btn btn-primary" id="btnRevealOk" type="button">OK</button>
+    </div>
+  </section>
+  <section class="screen center" data-screen="export-key">
+    <div class="topbar">
+      <button class="icon-btn" data-go="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Private Key</div>
+      <div class="spacer34"></div>
+    </div>
+    <label class="field-label" style="margin-top:6px;">Private Key</label>
+    <div class="input-wrap">
+      <span class="lead"><svg viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></span>
+      <input class="input compact has-copy" id="exportKeyValue" readonly spellcheck="false" autocomplete="off">
+      <button type="button" class="copy-btn" id="btnCopyPrivKey" aria-label="Copy private key"><svg viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></button>
+    </div>
+  </section>
+  <section class="screen" data-screen="settings">
+    <div class="topbar">
+      <button class="icon-btn" data-go="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+      <div class="topbar-title">Settings</div>
+      <div class="spacer34"></div>
+    </div>
+    <div class="section-title" style="margin-top:6px;">Wallet</div>
+    <div class="row-list card">
+      <div class="row-item" id="btnNetwork" style="cursor:pointer;">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82"/></svg></div>
+        <div class="main"><div class="t1">Network</div><div class="t2" id="settingsNetworkSub">Set the node RPC address</div></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="row-item" id="btnRevealPhrase" style="cursor:pointer;">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+        <div class="main"><div class="t1">Recovery Phrase</div><div class="t2">Show &amp; back up again</div></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+      <div class="row-item" id="btnExportKey" style="cursor:pointer;">
+        <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-5-9-5-9 5 9 5Z"/><path d="M3 10l9 5 9-5"/></svg></div>
+        <div class="main"><div class="t1">Export Private Key</div><div class="t2">Requires password confirmation</div></div>
+        <div class="chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 18l6-6-6-6"/></svg></div>
+      </div>
+    </div>
+    <div class="social-row" role="navigation" aria-label="Community links">
+      <button type="button" class="social-btn" data-social="https://x.com/zecolabs" aria-label="X (Twitter)" title="X (Twitter)">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z"/></svg>
+      </button>
+      <button type="button" class="social-btn" data-social="https://discord.zecolabs.com" aria-label="Discord" title="Discord">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.865-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.058a.082.082 0 0 0 .031.056 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
+      </button>
+      <button type="button" class="social-btn" data-social="https://t.me/zecolabs" aria-label="Telegram" title="Telegram">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg>
+      </button>
+      <button type="button" class="social-btn" data-social="https://github.com/zecolabs" aria-label="GitHub" title="GitHub">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+      </button>
+    </div>
+    <div class="after-field">
+      <button class="btn btn-danger-ghost" id="btnLock">Lock Wallet</button>
+    </div>
+  </section>
+</div>
+<div class="toast-layer" id="toastLayer" aria-live="polite"></div>
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box">
+    <div class="modal-title" id="modalTitle">Notice</div>
+    <div class="modal-message" id="modalMessage"></div>
+    <input class="modal-input" id="modalInput" style="display:none;">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="modalCancelBtn" style="display:none;">Cancel</button>
+      <button class="btn btn-primary" id="modalOkBtn">OK</button>
+    </div>
+  </div>
+</div>
+<script src="popup.js"></script>
+</body>
+</html>

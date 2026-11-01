@@ -1,0 +1,32 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "zecowallet"
+description = "Zeco wallet: terminal UI (curses) backed by a Rust crypto core"
+requires-python = ">=3.8"
+dynamic = ["version"]
+dependencies = [
+    "requests",
+    "mnemonic",
+    "windows-curses; sys_platform == 'win32'",
+]
+readme = "README.md"
+license = { text = "MIT OR Apache-2.0" }
+authors = [{ name = "ZecoLabs" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Rust",
+]
+
+[project.urls]
+Homepage = "https://github.com/zecolabs/wallet"
+
+[project.scripts]
+zecowallet = "zecowallet.main:cli"
+
+[tool.maturin]
+python-source = "python"
+module-name = "zecowallet._libcrypto"
+features = ["python", "pyo3/extension-module"]
