@@ -72,7 +72,11 @@ After this, `pkg/` contains `libcrypto.js` and `libcrypto_bg.wasm`, next to `man
 
 After a rebuild, click the reload icon on the extension card.
 
-By default the extension talks to a node at `http://127.0.0.1:3000/`.
+By default the extension talks to a node at `http://127.0.0.1:3000/`; change it in *Wallet setting* or *manifest.json*.
+```bash
+# alpha mainnet rpc
+https://alpha.zecolabs.com/
+```
 
 ## 4. Troubleshooting
 

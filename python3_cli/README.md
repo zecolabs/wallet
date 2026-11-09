@@ -123,7 +123,10 @@ Coming from an older version that kept `wallet.json` in the working directory? C
 folder above, or use *Wallet setting -> Load encrypted keystore* and type its path.
 
 The node address defaults to `http://127.0.0.1:3000/`; change it in *Wallet setting -> RPC URL*.
-
+```bash
+# alpha mainnet rpc
+https://alpha.zecolabs.com/
+```
 ## 5. Update / uninstall
 
 ```bash
